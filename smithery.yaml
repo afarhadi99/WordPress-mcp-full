@@ -1,4 +1,4 @@
-runtime: "container"
+runtime: "typescript"
 startCommand:
   type: "http"
   configSchema:
