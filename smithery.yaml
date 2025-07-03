@@ -1,19 +1,18 @@
-runtime: "typescript"
 startCommand:
-  type: "http"
+  type: stdio
   configSchema:
-    type: "object"
+    type: object
     properties:
       wordpressUrl:
-        type: "string"
+        type: string
         title: "WordPress URL"
         description: "Your WordPress site URL (e.g., https://yourdomain.com)"
       username:
-        type: "string"
+        type: string
         title: "WordPress Username"
         description: "Your WordPress username"
       applicationPassword:
-        type: "string"
+        type: string
         title: "Application Password"
         description: "WordPress application password (not regular password)"
     required: ["wordpressUrl", "username", "applicationPassword"]
@@ -21,6 +20,13 @@ startCommand:
     wordpressUrl: "https://example.com"
     username: "admin"
     applicationPassword: "xxxx xxxx xxxx xxxx xxxx xxxx"
-build:
-  dockerfile: "Dockerfile"
-  dockerBuildPath: "."
+  commandFunction: |
+    (config) => ({
+      command: 'node',
+      args: ['dist/index.js'],
+      env: {
+        WORDPRESS_URL: config.wordpressUrl,
+        USERNAME: config.username,
+        APPLICATION_PASSWORD: config.applicationPassword
+      }
+    })

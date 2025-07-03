@@ -9,55 +9,43 @@ import { WordPressService } from './services/wordpress.js';
 import { WooCommerceService } from './services/woocommerce.js';
 import { WordPressConfig } from './types.js';
 
-// Helper function to safely get string value
+// Helper functions
 function getString(value: unknown): string {
   return typeof value === 'string' ? value : '';
 }
 
-// Helper function to safely get number value
 function getNumber(value: unknown): number {
   return typeof value === 'number' ? value : 0;
 }
 
-// Helper function to safely get boolean value
 function getBoolean(value: unknown): boolean {
   return typeof value === 'boolean' ? value : false;
 }
 
-// Helper function to safely get array value
 function getArray(value: unknown): any[] {
   return Array.isArray(value) ? value : [];
 }
 
-// Helper function to safely get object value
 function getObject(value: unknown): Record<string, any> {
   return typeof value === 'object' && value !== null ? value as Record<string, any> : {};
 }
 
-// Parse configuration from environment or arguments
+// Configuration from environment variables (set by Smithery via commandFunction)
 function parseConfig(): WordPressConfig {
   const config = {
     wordpressUrl: process.env.WORDPRESS_URL || '',
-    username: process.env.WP_USERNAME || '',
-    applicationPassword: process.env.WP_APPLICATION_PASSWORD || '',
+    username: process.env.USERNAME || '',
+    applicationPassword: process.env.APPLICATION_PASSWORD || '',
   };
 
-  // Parse from query parameters if running as HTTP server
-  if (typeof window !== 'undefined' && window.location) {
-    const params = new URLSearchParams(window.location.search);
-    config.wordpressUrl = params.get('wordpressUrl') || config.wordpressUrl;
-    config.username = params.get('username') || config.username;
-    config.applicationPassword = params.get('applicationPassword') || config.applicationPassword;
-  }
-
   if (!config.wordpressUrl || !config.username || !config.applicationPassword) {
-    throw new Error('Missing required configuration: wordpressUrl, username, and applicationPassword are required');
+    throw new Error('Missing required configuration: WORDPRESS_URL, USERNAME, and APPLICATION_PASSWORD environment variables are required');
   }
 
   return config;
 }
 
-// Complete tool definitions
+// Complete tools array with ALL WordPress and WooCommerce tools
 const tools: Tool[] = [
   // WordPress Posts
   {
@@ -84,7 +72,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Post ID', required: true },
+        id: { type: 'number', description: 'Post ID' },
       },
       required: ['id'],
     },
@@ -95,8 +83,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        title: { type: 'string', description: 'Post title', required: true },
-        content: { type: 'string', description: 'Post content', required: true },
+        title: { type: 'string', description: 'Post title' },
+        content: { type: 'string', description: 'Post content' },
         excerpt: { type: 'string', description: 'Post excerpt' },
         status: { type: 'string', description: 'Post status (draft, publish, private, etc.)' },
         author: { type: 'number', description: 'Author ID' },
@@ -118,7 +106,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Post ID', required: true },
+        id: { type: 'number', description: 'Post ID' },
         title: { type: 'string', description: 'Post title' },
         content: { type: 'string', description: 'Post content' },
         excerpt: { type: 'string', description: 'Post excerpt' },
@@ -142,8 +130,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Post ID', required: true },
-        force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
+        id: { type: 'number', description: 'Post ID' },
+        force: { type: 'boolean', description: 'Whether to bypass trash and force deletion' },
       },
       required: ['id'],
     },
@@ -173,7 +161,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Page ID', required: true },
+        id: { type: 'number', description: 'Page ID' },
       },
       required: ['id'],
     },
@@ -184,8 +172,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        title: { type: 'string', description: 'Page title', required: true },
-        content: { type: 'string', description: 'Page content', required: true },
+        title: { type: 'string', description: 'Page title' },
+        content: { type: 'string', description: 'Page content' },
         excerpt: { type: 'string', description: 'Page excerpt' },
         status: { type: 'string', description: 'Page status' },
         author: { type: 'number', description: 'Author ID' },
@@ -206,7 +194,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Page ID', required: true },
+        id: { type: 'number', description: 'Page ID' },
         title: { type: 'string', description: 'Page title' },
         content: { type: 'string', description: 'Page content' },
         excerpt: { type: 'string', description: 'Page excerpt' },
@@ -229,8 +217,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Page ID', required: true },
-        force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
+        id: { type: 'number', description: 'Page ID' },
+        force: { type: 'boolean', description: 'Whether to bypass trash and force deletion' },
       },
       required: ['id'],
     },
@@ -258,7 +246,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'User ID', required: true },
+        id: { type: 'number', description: 'User ID' },
       },
       required: ['id'],
     },
@@ -269,9 +257,9 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        username: { type: 'string', description: 'Username', required: true },
-        email: { type: 'string', description: 'Email address', required: true },
-        password: { type: 'string', description: 'Password', required: true },
+        username: { type: 'string', description: 'Username' },
+        email: { type: 'string', description: 'Email address' },
+        password: { type: 'string', description: 'Password' },
         name: { type: 'string', description: 'Display name' },
         first_name: { type: 'string', description: 'First name' },
         last_name: { type: 'string', description: 'Last name' },
@@ -290,7 +278,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'User ID', required: true },
+        id: { type: 'number', description: 'User ID' },
         username: { type: 'string', description: 'Username' },
         email: { type: 'string', description: 'Email address' },
         password: { type: 'string', description: 'Password' },
@@ -312,7 +300,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'User ID', required: true },
+        id: { type: 'number', description: 'User ID' },
         reassign: { type: 'number', description: 'User ID to reassign content to' },
       },
       required: ['id'],
@@ -341,7 +329,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Category ID', required: true },
+        id: { type: 'number', description: 'Category ID' },
       },
       required: ['id'],
     },
@@ -352,7 +340,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Category name', required: true },
+        name: { type: 'string', description: 'Category name' },
         description: { type: 'string', description: 'Category description' },
         slug: { type: 'string', description: 'Category slug' },
         parent: { type: 'number', description: 'Parent category ID' },
@@ -366,7 +354,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Category ID', required: true },
+        id: { type: 'number', description: 'Category ID' },
         name: { type: 'string', description: 'Category name' },
         description: { type: 'string', description: 'Category description' },
         slug: { type: 'string', description: 'Category slug' },
@@ -381,7 +369,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Category ID', required: true },
+        id: { type: 'number', description: 'Category ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -409,7 +397,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tag ID', required: true },
+        id: { type: 'number', description: 'Tag ID' },
       },
       required: ['id'],
     },
@@ -420,7 +408,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Tag name', required: true },
+        name: { type: 'string', description: 'Tag name' },
         description: { type: 'string', description: 'Tag description' },
         slug: { type: 'string', description: 'Tag slug' },
       },
@@ -433,7 +421,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tag ID', required: true },
+        id: { type: 'number', description: 'Tag ID' },
         name: { type: 'string', description: 'Tag name' },
         description: { type: 'string', description: 'Tag description' },
         slug: { type: 'string', description: 'Tag slug' },
@@ -447,7 +435,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tag ID', required: true },
+        id: { type: 'number', description: 'Tag ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -480,7 +468,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Comment ID', required: true },
+        id: { type: 'number', description: 'Comment ID' },
       },
       required: ['id'],
     },
@@ -491,8 +479,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        post: { type: 'number', description: 'Post ID', required: true },
-        content: { type: 'string', description: 'Comment content', required: true },
+        post: { type: 'number', description: 'Post ID' },
+        content: { type: 'string', description: 'Comment content' },
         author: { type: 'number', description: 'Author ID' },
         author_name: { type: 'string', description: 'Author name' },
         author_email: { type: 'string', description: 'Author email' },
@@ -510,7 +498,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Comment ID', required: true },
+        id: { type: 'number', description: 'Comment ID' },
         content: { type: 'string', description: 'Comment content' },
         author: { type: 'number', description: 'Author ID' },
         author_name: { type: 'string', description: 'Author name' },
@@ -528,7 +516,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Comment ID', required: true },
+        id: { type: 'number', description: 'Comment ID' },
         force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
       },
       required: ['id'],
@@ -559,7 +547,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Media ID', required: true },
+        id: { type: 'number', description: 'Media ID' },
       },
       required: ['id'],
     },
@@ -570,7 +558,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Media ID', required: true },
+        id: { type: 'number', description: 'Media ID' },
         title: { type: 'string', description: 'Media title' },
         alt_text: { type: 'string', description: 'Alt text' },
         caption: { type: 'string', description: 'Caption' },
@@ -585,7 +573,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Media ID', required: true },
+        id: { type: 'number', description: 'Media ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -607,7 +595,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Menu ID', required: true },
+        id: { type: 'number', description: 'Menu ID' },
       },
       required: ['id'],
     },
@@ -628,7 +616,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        settings: { type: 'object', description: 'Settings object', required: true },
+        settings: { type: 'object', description: 'Settings object' },
       },
       required: ['settings'],
     },
@@ -641,7 +629,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Search query', required: true },
+        query: { type: 'string', description: 'Search query' },
         type: { type: 'string', description: 'Content type to search (post, page, etc.)' },
         subtype: { type: 'string', description: 'Content subtype' },
       },
@@ -679,7 +667,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Product ID', required: true },
+        id: { type: 'number', description: 'Product ID' },
       },
       required: ['id'],
     },
@@ -690,7 +678,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Product name', required: true },
+        name: { type: 'string', description: 'Product name' },
         type: { type: 'string', description: 'Product type (simple, grouped, external, variable)' },
         status: { type: 'string', description: 'Product status' },
         featured: { type: 'boolean', description: 'Featured product' },
@@ -722,7 +710,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Product ID', required: true },
+        id: { type: 'number', description: 'Product ID' },
         name: { type: 'string', description: 'Product name' },
         type: { type: 'string', description: 'Product type' },
         status: { type: 'string', description: 'Product status' },
@@ -752,7 +740,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Product ID', required: true },
+        id: { type: 'number', description: 'Product ID' },
         force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
       },
       required: ['id'],
@@ -778,7 +766,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        product_id: { type: 'number', description: 'Product ID', required: true },
+        product_id: { type: 'number', description: 'Product ID' },
         page: { type: 'number', description: 'Page number for pagination' },
         per_page: { type: 'number', description: 'Number of variations per page' },
       },
@@ -791,8 +779,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        product_id: { type: 'number', description: 'Product ID', required: true },
-        variation_id: { type: 'number', description: 'Variation ID', required: true },
+        product_id: { type: 'number', description: 'Product ID' },
+        variation_id: { type: 'number', description: 'Variation ID' },
       },
       required: ['product_id', 'variation_id'],
     },
@@ -803,8 +791,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        product_id: { type: 'number', description: 'Product ID', required: true },
-        variation: { type: 'object', description: 'Variation data', required: true },
+        product_id: { type: 'number', description: 'Product ID' },
+        variation: { type: 'object', description: 'Variation data' },
       },
       required: ['product_id', 'variation'],
     },
@@ -815,9 +803,9 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        product_id: { type: 'number', description: 'Product ID', required: true },
-        variation_id: { type: 'number', description: 'Variation ID', required: true },
-        variation: { type: 'object', description: 'Variation data', required: true },
+        product_id: { type: 'number', description: 'Product ID' },
+        variation_id: { type: 'number', description: 'Variation ID' },
+        variation: { type: 'object', description: 'Variation data' },
       },
       required: ['product_id', 'variation_id', 'variation'],
     },
@@ -828,8 +816,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        product_id: { type: 'number', description: 'Product ID', required: true },
-        variation_id: { type: 'number', description: 'Variation ID', required: true },
+        product_id: { type: 'number', description: 'Product ID' },
+        variation_id: { type: 'number', description: 'Variation ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['product_id', 'variation_id'],
@@ -858,7 +846,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Category ID', required: true },
+        id: { type: 'number', description: 'Category ID' },
       },
       required: ['id'],
     },
@@ -869,7 +857,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Category name', required: true },
+        name: { type: 'string', description: 'Category name' },
         slug: { type: 'string', description: 'Category slug' },
         parent: { type: 'number', description: 'Parent category ID' },
         description: { type: 'string', description: 'Category description' },
@@ -886,7 +874,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Category ID', required: true },
+        id: { type: 'number', description: 'Category ID' },
         name: { type: 'string', description: 'Category name' },
         slug: { type: 'string', description: 'Category slug' },
         parent: { type: 'number', description: 'Parent category ID' },
@@ -904,7 +892,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Category ID', required: true },
+        id: { type: 'number', description: 'Category ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -932,7 +920,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tag ID', required: true },
+        id: { type: 'number', description: 'Tag ID' },
       },
       required: ['id'],
     },
@@ -943,7 +931,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Tag name', required: true },
+        name: { type: 'string', description: 'Tag name' },
         slug: { type: 'string', description: 'Tag slug' },
         description: { type: 'string', description: 'Tag description' },
       },
@@ -956,7 +944,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tag ID', required: true },
+        id: { type: 'number', description: 'Tag ID' },
         name: { type: 'string', description: 'Tag name' },
         slug: { type: 'string', description: 'Tag slug' },
         description: { type: 'string', description: 'Tag description' },
@@ -970,7 +958,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tag ID', required: true },
+        id: { type: 'number', description: 'Tag ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -1003,7 +991,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Order ID', required: true },
+        id: { type: 'number', description: 'Order ID' },
       },
       required: ['id'],
     },
@@ -1019,7 +1007,7 @@ const tools: Tool[] = [
         set_paid: { type: 'boolean', description: 'Mark order as paid' },
         billing: { type: 'object', description: 'Billing address' },
         shipping: { type: 'object', description: 'Shipping address' },
-        line_items: { type: 'array', description: 'Order line items', required: true },
+        line_items: { type: 'array', description: 'Order line items' },
         shipping_lines: { type: 'array', description: 'Shipping lines' },
         fee_lines: { type: 'array', description: 'Fee lines' },
         coupon_lines: { type: 'array', description: 'Coupon lines' },
@@ -1037,7 +1025,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Order ID', required: true },
+        id: { type: 'number', description: 'Order ID' },
         status: { type: 'string', description: 'Order status' },
         billing: { type: 'object', description: 'Billing address' },
         shipping: { type: 'object', description: 'Shipping address' },
@@ -1056,7 +1044,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Order ID', required: true },
+        id: { type: 'number', description: 'Order ID' },
         force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
       },
       required: ['id'],
@@ -1082,7 +1070,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        order_id: { type: 'number', description: 'Order ID', required: true },
+        order_id: { type: 'number', description: 'Order ID' },
         type: { type: 'string', description: 'Note type (customer, internal, any)' },
       },
       required: ['order_id'],
@@ -1094,8 +1082,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        order_id: { type: 'number', description: 'Order ID', required: true },
-        note_id: { type: 'number', description: 'Note ID', required: true },
+        order_id: { type: 'number', description: 'Order ID' },
+        note_id: { type: 'number', description: 'Note ID' },
       },
       required: ['order_id', 'note_id'],
     },
@@ -1106,8 +1094,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        order_id: { type: 'number', description: 'Order ID', required: true },
-        note: { type: 'string', description: 'Note content', required: true },
+        order_id: { type: 'number', description: 'Order ID' },
+        note: { type: 'string', description: 'Note content' },
         customer_note: { type: 'boolean', description: 'Whether note is visible to customer' },
       },
       required: ['order_id', 'note'],
@@ -1119,8 +1107,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        order_id: { type: 'number', description: 'Order ID', required: true },
-        note_id: { type: 'number', description: 'Note ID', required: true },
+        order_id: { type: 'number', description: 'Order ID' },
+        note_id: { type: 'number', description: 'Note ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['order_id', 'note_id'],
@@ -1150,7 +1138,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Customer ID', required: true },
+        id: { type: 'number', description: 'Customer ID' },
       },
       required: ['id'],
     },
@@ -1161,7 +1149,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        email: { type: 'string', description: 'Customer email', required: true },
+        email: { type: 'string', description: 'Customer email' },
         first_name: { type: 'string', description: 'Customer first name' },
         last_name: { type: 'string', description: 'Customer last name' },
         username: { type: 'string', description: 'Customer username' },
@@ -1178,7 +1166,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Customer ID', required: true },
+        id: { type: 'number', description: 'Customer ID' },
         email: { type: 'string', description: 'Customer email' },
         first_name: { type: 'string', description: 'Customer first name' },
         last_name: { type: 'string', description: 'Customer last name' },
@@ -1196,7 +1184,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Customer ID', required: true },
+        id: { type: 'number', description: 'Customer ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
         reassign: { type: 'number', description: 'User ID to reassign content to' },
       },
@@ -1240,7 +1228,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Coupon ID', required: true },
+        id: { type: 'number', description: 'Coupon ID' },
       },
       required: ['id'],
     },
@@ -1251,8 +1239,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        code: { type: 'string', description: 'Coupon code', required: true },
-        amount: { type: 'string', description: 'Coupon amount', required: true },
+        code: { type: 'string', description: 'Coupon code' },
+        amount: { type: 'string', description: 'Coupon amount' },
         discount_type: { type: 'string', description: 'Discount type (percent, fixed_cart, fixed_product)' },
         description: { type: 'string', description: 'Coupon description' },
         date_expires: { type: 'string', description: 'Expiry date (ISO 8601)' },
@@ -1279,7 +1267,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Coupon ID', required: true },
+        id: { type: 'number', description: 'Coupon ID' },
         code: { type: 'string', description: 'Coupon code' },
         amount: { type: 'string', description: 'Coupon amount' },
         discount_type: { type: 'string', description: 'Discount type' },
@@ -1308,7 +1296,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Coupon ID', required: true },
+        id: { type: 'number', description: 'Coupon ID' },
         force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
       },
       required: ['id'],
@@ -1420,7 +1408,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Review ID', required: true },
+        id: { type: 'number', description: 'Review ID' },
       },
       required: ['id'],
     },
@@ -1431,11 +1419,11 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        product_id: { type: 'number', description: 'Product ID', required: true },
-        review: { type: 'string', description: 'Review content', required: true },
-        rating: { type: 'number', description: 'Review rating (1-5)', required: true },
-        reviewer: { type: 'string', description: 'Reviewer name', required: true },
-        reviewer_email: { type: 'string', description: 'Reviewer email', required: true },
+        product_id: { type: 'number', description: 'Product ID' },
+        review: { type: 'string', description: 'Review content' },
+        rating: { type: 'number', description: 'Review rating (1-5)' },
+        reviewer: { type: 'string', description: 'Reviewer name' },
+        reviewer_email: { type: 'string', description: 'Reviewer email' },
         status: { type: 'string', description: 'Review status' },
       },
       required: ['product_id', 'review', 'rating', 'reviewer', 'reviewer_email'],
@@ -1447,7 +1435,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Review ID', required: true },
+        id: { type: 'number', description: 'Review ID' },
         review: { type: 'string', description: 'Review content' },
         rating: { type: 'number', description: 'Review rating (1-5)' },
         reviewer: { type: 'string', description: 'Reviewer name' },
@@ -1463,7 +1451,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Review ID', required: true },
+        id: { type: 'number', description: 'Review ID' },
         force: { type: 'boolean', description: 'Whether to force delete (skip trash)' },
       },
       required: ['id'],
@@ -1485,7 +1473,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Tax class name', required: true },
+        name: { type: 'string', description: 'Tax class name' },
         slug: { type: 'string', description: 'Tax class slug' },
       },
       required: ['name'],
@@ -1497,7 +1485,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        slug: { type: 'string', description: 'Tax class slug', required: true },
+        slug: { type: 'string', description: 'Tax class slug' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['slug'],
@@ -1523,7 +1511,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tax rate ID', required: true },
+        id: { type: 'number', description: 'Tax rate ID' },
       },
       required: ['id'],
     },
@@ -1538,8 +1526,8 @@ const tools: Tool[] = [
         state: { type: 'string', description: 'State code' },
         postcode: { type: 'string', description: 'Postcode' },
         city: { type: 'string', description: 'City name' },
-        rate: { type: 'string', description: 'Tax rate', required: true },
-        name: { type: 'string', description: 'Tax rate name', required: true },
+        rate: { type: 'string', description: 'Tax rate' },
+        name: { type: 'string', description: 'Tax rate name' },
         priority: { type: 'number', description: 'Tax priority' },
         compound: { type: 'boolean', description: 'Whether tax is compound' },
         shipping: { type: 'boolean', description: 'Whether tax applies to shipping' },
@@ -1555,7 +1543,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tax rate ID', required: true },
+        id: { type: 'number', description: 'Tax rate ID' },
         country: { type: 'string', description: 'Country code' },
         state: { type: 'string', description: 'State code' },
         postcode: { type: 'string', description: 'Postcode' },
@@ -1577,7 +1565,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Tax rate ID', required: true },
+        id: { type: 'number', description: 'Tax rate ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -1599,7 +1587,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Shipping zone ID', required: true },
+        id: { type: 'number', description: 'Shipping zone ID' },
       },
       required: ['id'],
     },
@@ -1610,7 +1598,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Shipping zone name', required: true },
+        name: { type: 'string', description: 'Shipping zone name' },
         order: { type: 'number', description: 'Shipping zone order' },
       },
       required: ['name'],
@@ -1622,7 +1610,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Shipping zone ID', required: true },
+        id: { type: 'number', description: 'Shipping zone ID' },
         name: { type: 'string', description: 'Shipping zone name' },
         order: { type: 'number', description: 'Shipping zone order' },
       },
@@ -1635,7 +1623,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Shipping zone ID', required: true },
+        id: { type: 'number', description: 'Shipping zone ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -1649,7 +1637,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        zone_id: { type: 'number', description: 'Shipping zone ID', required: true },
+        zone_id: { type: 'number', description: 'Shipping zone ID' },
       },
       required: ['zone_id'],
     },
@@ -1660,8 +1648,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        zone_id: { type: 'number', description: 'Shipping zone ID', required: true },
-        method_id: { type: 'number', description: 'Shipping method instance ID', required: true },
+        zone_id: { type: 'number', description: 'Shipping zone ID' },
+        method_id: { type: 'number', description: 'Shipping method instance ID' },
       },
       required: ['zone_id', 'method_id'],
     },
@@ -1672,8 +1660,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        zone_id: { type: 'number', description: 'Shipping zone ID', required: true },
-        method_id: { type: 'string', description: 'Shipping method ID', required: true },
+        zone_id: { type: 'number', description: 'Shipping zone ID' },
+        method_id: { type: 'string', description: 'Shipping method ID' },
         settings: { type: 'object', description: 'Shipping method settings' },
       },
       required: ['zone_id', 'method_id'],
@@ -1685,9 +1673,9 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        zone_id: { type: 'number', description: 'Shipping zone ID', required: true },
-        method_id: { type: 'number', description: 'Shipping method instance ID', required: true },
-        settings: { type: 'object', description: 'Shipping method settings', required: true },
+        zone_id: { type: 'number', description: 'Shipping zone ID' },
+        method_id: { type: 'number', description: 'Shipping method instance ID' },
+        settings: { type: 'object', description: 'Shipping method settings' },
       },
       required: ['zone_id', 'method_id', 'settings'],
     },
@@ -1698,8 +1686,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        zone_id: { type: 'number', description: 'Shipping zone ID', required: true },
-        method_id: { type: 'number', description: 'Shipping method instance ID', required: true },
+        zone_id: { type: 'number', description: 'Shipping zone ID' },
+        method_id: { type: 'number', description: 'Shipping method instance ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['zone_id', 'method_id'],
@@ -1721,7 +1709,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string', description: 'Payment gateway ID', required: true },
+        id: { type: 'string', description: 'Payment gateway ID' },
       },
       required: ['id'],
     },
@@ -1732,8 +1720,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string', description: 'Payment gateway ID', required: true },
-        settings: { type: 'object', description: 'Payment gateway settings', required: true },
+        id: { type: 'string', description: 'Payment gateway ID' },
+        settings: { type: 'object', description: 'Payment gateway settings' },
       },
       required: ['id', 'settings'],
     },
@@ -1762,7 +1750,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string', description: 'Tool ID', required: true },
+        id: { type: 'string', description: 'Tool ID' },
       },
       required: ['id'],
     },
@@ -1783,7 +1771,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        group_id: { type: 'string', description: 'Settings group ID', required: true },
+        group_id: { type: 'string', description: 'Settings group ID' },
       },
       required: ['group_id'],
     },
@@ -1794,8 +1782,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        group_id: { type: 'string', description: 'Settings group ID', required: true },
-        option_id: { type: 'string', description: 'Setting option ID', required: true },
+        group_id: { type: 'string', description: 'Settings group ID' },
+        option_id: { type: 'string', description: 'Setting option ID' },
       },
       required: ['group_id', 'option_id'],
     },
@@ -1806,9 +1794,9 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        group_id: { type: 'string', description: 'Settings group ID', required: true },
-        option_id: { type: 'string', description: 'Setting option ID', required: true },
-        value: { type: 'string', description: 'Setting value', required: true },
+        group_id: { type: 'string', description: 'Settings group ID' },
+        option_id: { type: 'string', description: 'Setting option ID' },
+        value: { type: 'string', description: 'Setting value' },
       },
       required: ['group_id', 'option_id', 'value'],
     },
@@ -1819,8 +1807,8 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        group_id: { type: 'string', description: 'Settings group ID', required: true },
-        options: { type: 'array', description: 'Array of setting options to update', required: true },
+        group_id: { type: 'string', description: 'Settings group ID' },
+        options: { type: 'array', description: 'Array of setting options to update' },
       },
       required: ['group_id', 'options'],
     },
@@ -1848,7 +1836,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Webhook ID', required: true },
+        id: { type: 'number', description: 'Webhook ID' },
       },
       required: ['id'],
     },
@@ -1859,9 +1847,9 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        name: { type: 'string', description: 'Webhook name', required: true },
-        topic: { type: 'string', description: 'Webhook topic', required: true },
-        delivery_url: { type: 'string', description: 'Delivery URL', required: true },
+        name: { type: 'string', description: 'Webhook name' },
+        topic: { type: 'string', description: 'Webhook topic' },
+        delivery_url: { type: 'string', description: 'Delivery URL' },
         secret: { type: 'string', description: 'Webhook secret' },
         status: { type: 'string', description: 'Webhook status' },
       },
@@ -1874,7 +1862,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Webhook ID', required: true },
+        id: { type: 'number', description: 'Webhook ID' },
         name: { type: 'string', description: 'Webhook name' },
         topic: { type: 'string', description: 'Webhook topic' },
         delivery_url: { type: 'string', description: 'Delivery URL' },
@@ -1890,7 +1878,7 @@ const tools: Tool[] = [
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'number', description: 'Webhook ID', required: true },
+        id: { type: 'number', description: 'Webhook ID' },
         force: { type: 'boolean', description: 'Whether to force delete' },
       },
       required: ['id'],
@@ -1924,7 +1912,6 @@ async function main() {
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
 
-    // Check if args exists
     if (!args) {
       return {
         content: [
@@ -1970,8 +1957,8 @@ async function main() {
           status: getString(args.status) || undefined,
           author: getNumber(args.author) || undefined,
           featured_media: getNumber(args.featured_media) || undefined,
-          categories: getArray(args.categories),
-          tags: getArray(args.tags),
+          categories: args.categories ? getArray(args.categories) : undefined,
+          tags: args.tags ? getArray(args.tags) : undefined,
           slug: getString(args.slug) || undefined,
           comment_status: getString(args.comment_status) || undefined,
           ping_status: getString(args.ping_status) || undefined,
@@ -1981,9 +1968,10 @@ async function main() {
         result = await wordpressService.updatePost(getNumber(args.id), postData);
       } else if (name === 'wp_delete_post') {
         result = await wordpressService.deletePost(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WordPress Pages
-      } else if (name === 'wp_get_pages') {
+      else if (name === 'wp_get_pages') {
         result = await wordpressService.getPages(getObject(args));
       } else if (name === 'wp_get_page') {
         result = await wordpressService.getPage(getNumber(args.id));
@@ -2021,9 +2009,10 @@ async function main() {
         result = await wordpressService.updatePage(getNumber(args.id), pageData);
       } else if (name === 'wp_delete_page') {
         result = await wordpressService.deletePage(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WordPress Users
-      } else if (name === 'wp_get_users') {
+      else if (name === 'wp_get_users') {
         result = await wordpressService.getUsers(getObject(args));
       } else if (name === 'wp_get_user') {
         result = await wordpressService.getUser(getNumber(args.id));
@@ -2060,9 +2049,10 @@ async function main() {
       } else if (name === 'wp_delete_user') {
         const reassignId = getNumber(args.reassign) || undefined;
         result = await wordpressService.deleteUser(getNumber(args.id), reassignId);
-
+      }
+      
       // WordPress Categories
-      } else if (name === 'wp_get_categories') {
+      else if (name === 'wp_get_categories') {
         result = await wordpressService.getCategories(getObject(args));
       } else if (name === 'wp_get_category') {
         result = await wordpressService.getCategory(getNumber(args.id));
@@ -2084,9 +2074,10 @@ async function main() {
         result = await wordpressService.updateCategory(getNumber(args.id), categoryData);
       } else if (name === 'wp_delete_category') {
         result = await wordpressService.deleteCategory(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WordPress Tags
-      } else if (name === 'wp_get_tags') {
+      else if (name === 'wp_get_tags') {
         result = await wordpressService.getTags(getObject(args));
       } else if (name === 'wp_get_tag') {
         result = await wordpressService.getTag(getNumber(args.id));
@@ -2106,9 +2097,10 @@ async function main() {
         result = await wordpressService.updateTag(getNumber(args.id), tagData);
       } else if (name === 'wp_delete_tag') {
         result = await wordpressService.deleteTag(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WordPress Comments
-      } else if (name === 'wp_get_comments') {
+      else if (name === 'wp_get_comments') {
         result = await wordpressService.getComments(getObject(args));
       } else if (name === 'wp_get_comment') {
         result = await wordpressService.getComment(getNumber(args.id));
@@ -2138,9 +2130,10 @@ async function main() {
         result = await wordpressService.updateComment(getNumber(args.id), commentData);
       } else if (name === 'wp_delete_comment') {
         result = await wordpressService.deleteComment(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WordPress Media
-      } else if (name === 'wp_get_media') {
+      else if (name === 'wp_get_media') {
         result = await wordpressService.getMedia(getObject(args));
       } else if (name === 'wp_get_media_item') {
         result = await wordpressService.getMediaItem(getNumber(args.id));
@@ -2154,85 +2147,51 @@ async function main() {
         result = await wordpressService.updateMediaItem(getNumber(args.id), mediaData);
       } else if (name === 'wp_delete_media_item') {
         result = await wordpressService.deleteMediaItem(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WordPress Menus
-      } else if (name === 'wp_get_menus') {
+      else if (name === 'wp_get_menus') {
         result = await wordpressService.getMenus();
       } else if (name === 'wp_get_menu') {
         result = await wordpressService.getMenu(getNumber(args.id));
-
+      }
+      
       // WordPress Settings
-      } else if (name === 'wp_get_settings') {
+      else if (name === 'wp_get_settings') {
         result = await wordpressService.getSettings();
       } else if (name === 'wp_update_settings') {
         result = await wordpressService.updateSettings(getObject(args.settings));
-
+      }
+      
       // WordPress Search
-      } else if (name === 'wp_search') {
+      else if (name === 'wp_search') {
         result = await wordpressService.search(
           getString(args.query), 
           getString(args.type) || undefined, 
           getString(args.subtype) || undefined
         );
-
+      }
+      
       // WooCommerce Products
-      } else if (name === 'wc_get_products') {
+      else if (name === 'wc_get_products') {
         result = await woocommerceService.getProducts(getObject(args));
       } else if (name === 'wc_get_product') {
         result = await woocommerceService.getProduct(getNumber(args.id));
       } else if (name === 'wc_create_product') {
-        const productData = {
-          name: getString(args.name),
-          type: getString(args.type) || undefined,
-          status: getString(args.status) || undefined,
-          featured: getBoolean(args.featured),
-          catalog_visibility: getString(args.catalog_visibility) || undefined,
-          description: getString(args.description) || undefined,
-          short_description: getString(args.short_description) || undefined,
-          sku: getString(args.sku) || undefined,
-          regular_price: getString(args.regular_price) || undefined,
-          sale_price: getString(args.sale_price) || undefined,
-          manage_stock: getBoolean(args.manage_stock),
-          stock_quantity: getNumber(args.stock_quantity) || undefined,
-          stock_status: getString(args.stock_status) || undefined,
-          backorders: getString(args.backorders) || undefined,
-          weight: getString(args.weight) || undefined,
-          categories: getArray(args.categories),
-          tags: getArray(args.tags),
-          images: getArray(args.images),
-          attributes: getArray(args.attributes),
-        };
-        result = await woocommerceService.createProduct(productData);
+        result = await woocommerceService.createProduct(getObject(args));
       } else if (name === 'wc_update_product') {
-        const productData = {
-          name: getString(args.name) || undefined,
-          type: getString(args.type) || undefined,
-          status: getString(args.status) || undefined,
-          featured: getBoolean(args.featured),
-          catalog_visibility: getString(args.catalog_visibility) || undefined,
-          description: getString(args.description) || undefined,
-          short_description: getString(args.short_description) || undefined,
-          sku: getString(args.sku) || undefined,
-          regular_price: getString(args.regular_price) || undefined,
-          sale_price: getString(args.sale_price) || undefined,
-          manage_stock: getBoolean(args.manage_stock),
-          stock_quantity: getNumber(args.stock_quantity) || undefined,
-          stock_status: getString(args.stock_status) || undefined,
-          backorders: getString(args.backorders) || undefined,
-          weight: getString(args.weight) || undefined,
-          categories: getArray(args.categories),
-          tags: getArray(args.tags),
-          images: getArray(args.images),
-          attributes: getArray(args.attributes),
-        };
-        result = await woocommerceService.updateProduct(getNumber(args.id), productData);
+        const productData = getObject(args);
+        const productId = getNumber(args.id);
+        delete productData.id;
+        result = await woocommerceService.updateProduct(productId, productData);
       } else if (name === 'wc_delete_product') {
         result = await woocommerceService.deleteProduct(getNumber(args.id), getBoolean(args.force));
       } else if (name === 'wc_batch_update_products') {
         result = await woocommerceService.batchUpdateProducts(getObject(args));
-
+      }
+      
       // WooCommerce Product Variations
-      } else if (name === 'wc_get_product_variations') {
+      else if (name === 'wc_get_product_variations') {
         result = await woocommerceService.getProductVariations(getNumber(args.product_id), getObject(args));
       } else if (name === 'wc_get_product_variation') {
         result = await woocommerceService.getProductVariation(getNumber(args.product_id), getNumber(args.variation_id));
@@ -2242,100 +2201,60 @@ async function main() {
         result = await woocommerceService.updateProductVariation(getNumber(args.product_id), getNumber(args.variation_id), getObject(args.variation));
       } else if (name === 'wc_delete_product_variation') {
         result = await woocommerceService.deleteProductVariation(getNumber(args.product_id), getNumber(args.variation_id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Product Categories
-      } else if (name === 'wc_get_product_categories') {
+      else if (name === 'wc_get_product_categories') {
         result = await woocommerceService.getProductCategories(getObject(args));
       } else if (name === 'wc_get_product_category') {
         result = await woocommerceService.getProductCategory(getNumber(args.id));
       } else if (name === 'wc_create_product_category') {
-        const categoryData = {
-          name: getString(args.name),
-          slug: getString(args.slug) || undefined,
-          parent: getNumber(args.parent) || undefined,
-          description: getString(args.description) || undefined,
-          display: getString(args.display) || undefined,
-          image: getObject(args.image),
-          menu_order: getNumber(args.menu_order) || undefined,
-        };
-        result = await woocommerceService.createProductCategory(categoryData);
+        result = await woocommerceService.createProductCategory(getObject(args));
       } else if (name === 'wc_update_product_category') {
-        const categoryData = {
-          name: getString(args.name) || undefined,
-          slug: getString(args.slug) || undefined,
-          parent: getNumber(args.parent) || undefined,
-          description: getString(args.description) || undefined,
-          display: getString(args.display) || undefined,
-          image: getObject(args.image),
-          menu_order: getNumber(args.menu_order) || undefined,
-        };
-        result = await woocommerceService.updateProductCategory(getNumber(args.id), categoryData);
+        const categoryData = getObject(args);
+        const categoryId = getNumber(args.id);
+        delete categoryData.id;
+        result = await woocommerceService.updateProductCategory(categoryId, categoryData);
       } else if (name === 'wc_delete_product_category') {
         result = await woocommerceService.deleteProductCategory(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Product Tags
-      } else if (name === 'wc_get_product_tags') {
+      else if (name === 'wc_get_product_tags') {
         result = await woocommerceService.getProductTags(getObject(args));
       } else if (name === 'wc_get_product_tag') {
         result = await woocommerceService.getProductTag(getNumber(args.id));
       } else if (name === 'wc_create_product_tag') {
-        const tagData = {
-          name: getString(args.name),
-          slug: getString(args.slug) || undefined,
-          description: getString(args.description) || undefined,
-        };
-        result = await woocommerceService.createProductTag(tagData);
+        result = await woocommerceService.createProductTag(getObject(args));
       } else if (name === 'wc_update_product_tag') {
-        const tagData = {
-          name: getString(args.name) || undefined,
-          slug: getString(args.slug) || undefined,
-          description: getString(args.description) || undefined,
-        };
-        result = await woocommerceService.updateProductTag(getNumber(args.id), tagData);
+        const tagData = getObject(args);
+        const tagId = getNumber(args.id);
+        delete tagData.id;
+        result = await woocommerceService.updateProductTag(tagId, tagData);
       } else if (name === 'wc_delete_product_tag') {
         result = await woocommerceService.deleteProductTag(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Orders
-      } else if (name === 'wc_get_orders') {
+      else if (name === 'wc_get_orders') {
         result = await woocommerceService.getOrders(getObject(args));
       } else if (name === 'wc_get_order') {
         result = await woocommerceService.getOrder(getNumber(args.id));
       } else if (name === 'wc_create_order') {
-        const orderData = {
-          payment_method: getString(args.payment_method) || undefined,
-          payment_method_title: getString(args.payment_method_title) || undefined,
-          set_paid: getBoolean(args.set_paid),
-          billing: getObject(args.billing),
-          shipping: getObject(args.shipping),
-          line_items: getArray(args.line_items),
-          shipping_lines: getArray(args.shipping_lines),
-          fee_lines: getArray(args.fee_lines),
-          coupon_lines: getArray(args.coupon_lines),
-          status: getString(args.status) || undefined,
-          currency: getString(args.currency) || undefined,
-          customer_id: getNumber(args.customer_id) || undefined,
-          customer_note: getString(args.customer_note) || undefined,
-        };
-        result = await woocommerceService.createOrder(orderData);
+        result = await woocommerceService.createOrder(getObject(args));
       } else if (name === 'wc_update_order') {
-        const orderData = {
-          status: getString(args.status) || undefined,
-          billing: getObject(args.billing),
-          shipping: getObject(args.shipping),
-          line_items: getArray(args.line_items),
-          shipping_lines: getArray(args.shipping_lines),
-          fee_lines: getArray(args.fee_lines),
-          coupon_lines: getArray(args.coupon_lines),
-          customer_note: getString(args.customer_note) || undefined,
-        };
-        result = await woocommerceService.updateOrder(getNumber(args.id), orderData);
+        const orderData = getObject(args);
+        const orderId = getNumber(args.id);
+        delete orderData.id;
+        result = await woocommerceService.updateOrder(orderId, orderData);
       } else if (name === 'wc_delete_order') {
         result = await woocommerceService.deleteOrder(getNumber(args.id), getBoolean(args.force));
       } else if (name === 'wc_batch_update_orders') {
         result = await woocommerceService.batchUpdateOrders(getObject(args));
-
+      }
+      
       // WooCommerce Order Notes
-      } else if (name === 'wc_get_order_notes') {
+      else if (name === 'wc_get_order_notes') {
         result = await woocommerceService.getOrderNotes(getNumber(args.order_id), getObject(args));
       } else if (name === 'wc_get_order_note') {
         result = await woocommerceService.getOrderNote(getNumber(args.order_id), getNumber(args.note_id));
@@ -2346,96 +2265,47 @@ async function main() {
         });
       } else if (name === 'wc_delete_order_note') {
         result = await woocommerceService.deleteOrderNote(getNumber(args.order_id), getNumber(args.note_id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Customers
-      } else if (name === 'wc_get_customers') {
+      else if (name === 'wc_get_customers') {
         result = await woocommerceService.getCustomers(getObject(args));
       } else if (name === 'wc_get_customer') {
         result = await woocommerceService.getCustomer(getNumber(args.id));
       } else if (name === 'wc_create_customer') {
-        const customerData = {
-          email: getString(args.email),
-          first_name: getString(args.first_name) || undefined,
-          last_name: getString(args.last_name) || undefined,
-          username: getString(args.username) || undefined,
-          password: getString(args.password) || undefined,
-          billing: getObject(args.billing),
-          shipping: getObject(args.shipping),
-        };
-        result = await woocommerceService.createCustomer(customerData);
+        result = await woocommerceService.createCustomer(getObject(args));
       } else if (name === 'wc_update_customer') {
-        const customerData = {
-          email: getString(args.email) || undefined,
-          first_name: getString(args.first_name) || undefined,
-          last_name: getString(args.last_name) || undefined,
-          username: getString(args.username) || undefined,
-          password: getString(args.password) || undefined,
-          billing: getObject(args.billing),
-          shipping: getObject(args.shipping),
-        };
-        result = await woocommerceService.updateCustomer(getNumber(args.id), customerData);
+        const customerData = getObject(args);
+        const customerId = getNumber(args.id);
+        delete customerData.id;
+        result = await woocommerceService.updateCustomer(customerId, customerData);
       } else if (name === 'wc_delete_customer') {
         const reassignId = getNumber(args.reassign) || undefined;
         result = await woocommerceService.deleteCustomer(getNumber(args.id), getBoolean(args.force), reassignId);
       } else if (name === 'wc_batch_update_customers') {
         result = await woocommerceService.batchUpdateCustomers(getObject(args));
-
+      }
+      
       // WooCommerce Coupons
-      } else if (name === 'wc_get_coupons') {
+      else if (name === 'wc_get_coupons') {
         result = await woocommerceService.getCoupons(getObject(args));
       } else if (name === 'wc_get_coupon') {
         result = await woocommerceService.getCoupon(getNumber(args.id));
       } else if (name === 'wc_create_coupon') {
-        const couponData = {
-          code: getString(args.code),
-          amount: getString(args.amount),
-          discount_type: getString(args.discount_type) || undefined,
-          description: getString(args.description) || undefined,
-          date_expires: getString(args.date_expires) || undefined,
-          individual_use: getBoolean(args.individual_use),
-          product_ids: getArray(args.product_ids),
-          excluded_product_ids: getArray(args.excluded_product_ids),
-          usage_limit: getNumber(args.usage_limit) || undefined,
-          usage_limit_per_user: getNumber(args.usage_limit_per_user) || undefined,
-          limit_usage_to_x_items: getNumber(args.limit_usage_to_x_items) || undefined,
-          free_shipping: getBoolean(args.free_shipping),
-          product_categories: getArray(args.product_categories),
-          excluded_product_categories: getArray(args.excluded_product_categories),
-          exclude_sale_items: getBoolean(args.exclude_sale_items),
-          minimum_amount: getString(args.minimum_amount) || undefined,
-          maximum_amount: getString(args.maximum_amount) || undefined,
-          email_restrictions: getArray(args.email_restrictions),
-        };
-        result = await woocommerceService.createCoupon(couponData);
+        result = await woocommerceService.createCoupon(getObject(args));
       } else if (name === 'wc_update_coupon') {
-        const couponData = {
-          code: getString(args.code) || undefined,
-          amount: getString(args.amount) || undefined,
-          discount_type: getString(args.discount_type) || undefined,
-          description: getString(args.description) || undefined,
-          date_expires: getString(args.date_expires) || undefined,
-          individual_use: getBoolean(args.individual_use),
-          product_ids: getArray(args.product_ids),
-          excluded_product_ids: getArray(args.excluded_product_ids),
-          usage_limit: getNumber(args.usage_limit) || undefined,
-          usage_limit_per_user: getNumber(args.usage_limit_per_user) || undefined,
-          limit_usage_to_x_items: getNumber(args.limit_usage_to_x_items) || undefined,
-          free_shipping: getBoolean(args.free_shipping),
-          product_categories: getArray(args.product_categories),
-          excluded_product_categories: getArray(args.excluded_product_categories),
-          exclude_sale_items: getBoolean(args.exclude_sale_items),
-          minimum_amount: getString(args.minimum_amount) || undefined,
-          maximum_amount: getString(args.maximum_amount) || undefined,
-          email_restrictions: getArray(args.email_restrictions),
-        };
-        result = await woocommerceService.updateCoupon(getNumber(args.id), couponData);
+        const couponData = getObject(args);
+        const couponId = getNumber(args.id);
+        delete couponData.id;
+        result = await woocommerceService.updateCoupon(couponId, couponData);
       } else if (name === 'wc_delete_coupon') {
         result = await woocommerceService.deleteCoupon(getNumber(args.id), getBoolean(args.force));
       } else if (name === 'wc_batch_update_coupons') {
         result = await woocommerceService.batchUpdateCoupons(getObject(args));
-
+      }
+      
       // WooCommerce Reports
-      } else if (name === 'wc_get_sales_report') {
+      else if (name === 'wc_get_sales_report') {
         result = await woocommerceService.getSalesReport(getObject(args));
       } else if (name === 'wc_get_top_sellers_report') {
         result = await woocommerceService.getTopSellersReport(getObject(args));
@@ -2449,106 +2319,71 @@ async function main() {
         result = await woocommerceService.getProductsReport(getObject(args));
       } else if (name === 'wc_get_reviews_report') {
         result = await woocommerceService.getReviewsReport(getObject(args));
-
+      }
+      
       // WooCommerce Product Reviews
-      } else if (name === 'wc_get_product_reviews') {
+      else if (name === 'wc_get_product_reviews') {
         result = await woocommerceService.getProductReviews(getObject(args));
       } else if (name === 'wc_get_product_review') {
         result = await woocommerceService.getProductReview(getNumber(args.id));
       } else if (name === 'wc_create_product_review') {
-        const reviewData = {
-          product_id: getNumber(args.product_id),
-          review: getString(args.review),
-          rating: getNumber(args.rating),
-          reviewer: getString(args.reviewer),
-          reviewer_email: getString(args.reviewer_email),
-          status: getString(args.status) || undefined,
-        };
-        result = await woocommerceService.createProductReview(reviewData);
+        result = await woocommerceService.createProductReview(getObject(args));
       } else if (name === 'wc_update_product_review') {
-        const reviewData = {
-          review: getString(args.review) || undefined,
-          rating: getNumber(args.rating) || undefined,
-          reviewer: getString(args.reviewer) || undefined,
-          reviewer_email: getString(args.reviewer_email) || undefined,
-          status: getString(args.status) || undefined,
-        };
-        result = await woocommerceService.updateProductReview(getNumber(args.id), reviewData);
+        const reviewData = getObject(args);
+        const reviewId = getNumber(args.id);
+        delete reviewData.id;
+        result = await woocommerceService.updateProductReview(reviewId, reviewData);
       } else if (name === 'wc_delete_product_review') {
         result = await woocommerceService.deleteProductReview(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Tax Classes
-      } else if (name === 'wc_get_tax_classes') {
+        else if (name === 'wc_get_tax_classes') {
         result = await woocommerceService.getTaxClasses();
-      } else if (name === 'wc_create_tax_class') {
+        } else if (name === 'wc_create_tax_class') {
         const taxClassData = {
-          name: getString(args.name),
-          slug: getString(args.slug) || undefined,
+            name: getString(args.name),
+            slug: getString(args.slug) || undefined,
         };
         result = await woocommerceService.createTaxClass(taxClassData);
-      } else if (name === 'wc_delete_tax_class') {
+        } else if (name === 'wc_delete_tax_class') {
         result = await woocommerceService.deleteTaxClass(getString(args.slug), getBoolean(args.force));
-
+        }
+      
       // WooCommerce Tax Rates
-      } else if (name === 'wc_get_tax_rates') {
+      else if (name === 'wc_get_tax_rates') {
         result = await woocommerceService.getTaxRates(getObject(args));
       } else if (name === 'wc_get_tax_rate') {
         result = await woocommerceService.getTaxRate(getNumber(args.id));
       } else if (name === 'wc_create_tax_rate') {
-        const taxRateData = {
-          country: getString(args.country) || undefined,
-          state: getString(args.state) || undefined,
-          postcode: getString(args.postcode) || undefined,
-          city: getString(args.city) || undefined,
-          rate: getString(args.rate),
-          name: getString(args.name),
-          priority: getNumber(args.priority) || undefined,
-          compound: getBoolean(args.compound),
-          shipping: getBoolean(args.shipping),
-          order: getNumber(args.order) || undefined,
-          class: getString(args.class) || undefined,
-        };
-        result = await woocommerceService.createTaxRate(taxRateData);
+        result = await woocommerceService.createTaxRate(getObject(args));
       } else if (name === 'wc_update_tax_rate') {
-        const taxRateData = {
-          country: getString(args.country) || undefined,
-          state: getString(args.state) || undefined,
-          postcode: getString(args.postcode) || undefined,
-          city: getString(args.city) || undefined,
-          rate: getString(args.rate) || undefined,
-          name: getString(args.name) || undefined,
-          priority: getNumber(args.priority) || undefined,
-          compound: getBoolean(args.compound),
-          shipping: getBoolean(args.shipping),
-          order: getNumber(args.order) || undefined,
-          class: getString(args.class) || undefined,
-        };
-        result = await woocommerceService.updateTaxRate(getNumber(args.id), taxRateData);
+        const taxRateData = getObject(args);
+        const taxRateId = getNumber(args.id);
+        delete taxRateData.id;
+        result = await woocommerceService.updateTaxRate(taxRateId, taxRateData);
       } else if (name === 'wc_delete_tax_rate') {
         result = await woocommerceService.deleteTaxRate(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Shipping Zones
-      } else if (name === 'wc_get_shipping_zones') {
+      else if (name === 'wc_get_shipping_zones') {
         result = await woocommerceService.getShippingZones();
       } else if (name === 'wc_get_shipping_zone') {
         result = await woocommerceService.getShippingZone(getNumber(args.id));
       } else if (name === 'wc_create_shipping_zone') {
-        const zoneData = {
-          name: getString(args.name),
-          order: getNumber(args.order) || undefined,
-        };
-        result = await woocommerceService.createShippingZone(zoneData);
+        result = await woocommerceService.createShippingZone(getObject(args));
       } else if (name === 'wc_update_shipping_zone') {
-        const zoneData = {
-          name: getString(args.name) || undefined,
-          order: getNumber(args.order) || undefined,
-        };
-        result = await woocommerceService.updateShippingZone(getNumber(args.id), zoneData);
+        const zoneData = getObject(args);
+        const zoneId = getNumber(args.id);
+        delete zoneData.id;
+        result = await woocommerceService.updateShippingZone(zoneId, zoneData);
       } else if (name === 'wc_delete_shipping_zone') {
         result = await woocommerceService.deleteShippingZone(getNumber(args.id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Shipping Zone Methods
-      } else if (name === 'wc_get_shipping_zone_methods') {
+      else if (name === 'wc_get_shipping_zone_methods') {
         result = await woocommerceService.getShippingZoneMethods(getNumber(args.zone_id));
       } else if (name === 'wc_get_shipping_zone_method') {
         result = await woocommerceService.getShippingZoneMethod(getNumber(args.zone_id), getNumber(args.method_id));
@@ -2563,25 +2398,28 @@ async function main() {
         });
       } else if (name === 'wc_delete_shipping_zone_method') {
         result = await woocommerceService.deleteShippingZoneMethod(getNumber(args.zone_id), getNumber(args.method_id), getBoolean(args.force));
-
+      }
+      
       // WooCommerce Payment Gateways
-      } else if (name === 'wc_get_payment_gateways') {
+      else if (name === 'wc_get_payment_gateways') {
         result = await woocommerceService.getPaymentGateways();
       } else if (name === 'wc_get_payment_gateway') {
         result = await woocommerceService.getPaymentGateway(getString(args.id));
       } else if (name === 'wc_update_payment_gateway') {
         result = await woocommerceService.updatePaymentGateway(getString(args.id), getObject(args.settings));
-
+      }
+      
       // WooCommerce System Status
-      } else if (name === 'wc_get_system_status') {
+      else if (name === 'wc_get_system_status') {
         result = await woocommerceService.getSystemStatus();
       } else if (name === 'wc_get_system_status_tools') {
         result = await woocommerceService.getSystemStatusTools();
       } else if (name === 'wc_run_system_status_tool') {
         result = await woocommerceService.runSystemStatusTool(getString(args.id));
-
+      }
+      
       // WooCommerce Settings
-      } else if (name === 'wc_get_settings') {
+      else if (name === 'wc_get_settings') {
         result = await woocommerceService.getSettings();
       } else if (name === 'wc_get_setting_group') {
         result = await woocommerceService.getSettingGroup(getString(args.group_id));
@@ -2593,34 +2431,25 @@ async function main() {
         });
       } else if (name === 'wc_batch_update_setting_group') {
         result = await woocommerceService.batchUpdateSettingGroup(getString(args.group_id), getArray(args.options));
-
+      }
+      
       // WooCommerce Webhooks
-      } else if (name === 'wc_get_webhooks') {
+      else if (name === 'wc_get_webhooks') {
         result = await woocommerceService.getWebhooks(getObject(args));
       } else if (name === 'wc_get_webhook') {
         result = await woocommerceService.getWebhook(getNumber(args.id));
       } else if (name === 'wc_create_webhook') {
-        const webhookData = {
-          name: getString(args.name),
-          topic: getString(args.topic),
-          delivery_url: getString(args.delivery_url),
-          secret: getString(args.secret) || undefined,
-          status: getString(args.status) || undefined,
-        };
-        result = await woocommerceService.createWebhook(webhookData);
+        result = await woocommerceService.createWebhook(getObject(args));
       } else if (name === 'wc_update_webhook') {
-        const webhookData = {
-          name: getString(args.name) || undefined,
-          topic: getString(args.topic) || undefined,
-          delivery_url: getString(args.delivery_url) || undefined,
-          secret: getString(args.secret) || undefined,
-          status: getString(args.status) || undefined,
-        };
-        result = await woocommerceService.updateWebhook(getNumber(args.id), webhookData);
+        const webhookData = getObject(args);
+        const webhookId = getNumber(args.id);
+        delete webhookData.id;
+        result = await woocommerceService.updateWebhook(webhookId, webhookData);
       } else if (name === 'wc_delete_webhook') {
         result = await woocommerceService.deleteWebhook(getNumber(args.id), getBoolean(args.force));
-
-      } else {
+      }
+      
+      else {
         throw new Error(`Unknown tool: ${name}`);
       }
 
@@ -2645,7 +2474,7 @@ async function main() {
     }
   });
 
-  // Start the server
+  // Use stdio transport
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }
