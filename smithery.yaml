@@ -1,1 +1,26 @@
-runtime: "typescript"
+runtime: "container"
+startCommand:
+  type: "http"
+  configSchema:
+    type: "object"
+    properties:
+      wordpressUrl:
+        type: "string"
+        title: "WordPress URL"
+        description: "Your WordPress site URL (e.g., https://yourdomain.com)"
+      username:
+        type: "string"
+        title: "WordPress Username"
+        description: "Your WordPress username"
+      applicationPassword:
+        type: "string"
+        title: "Application Password"
+        description: "WordPress application password (not regular password)"
+    required: ["wordpressUrl", "username", "applicationPassword"]
+  exampleConfig:
+    wordpressUrl: "https://example.com"
+    username: "admin"
+    applicationPassword: "xxxx xxxx xxxx xxxx xxxx xxxx"
+build:
+  dockerfile: "Dockerfile"
+  dockerBuildPath: "."
