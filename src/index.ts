@@ -580,6 +580,24 @@ const tools: Tool[] = [
     },
   },
 
+  {
+  name: 'wp_upload_media',
+  description: 'Upload a file to WordPress media library',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      filename: { type: 'string', description: 'Name of the file including extension' },
+      content: { type: 'string', description: 'Base64 encoded file content' },
+      content_type: { type: 'string', description: 'MIME type of the file (e.g., image/jpeg, image/png)' },
+      title: { type: 'string', description: 'Media title' },
+      alt_text: { type: 'string', description: 'Alt text for the image' },
+      caption: { type: 'string', description: 'Media caption' },
+      description: { type: 'string', description: 'Media description' },
+    },
+    required: ['filename', 'content', 'content_type'],
+  },
+},
+
   // WordPress Menus
   {
     name: 'wp_get_menus',
@@ -2148,7 +2166,18 @@ async function main() {
       } else if (name === 'wp_delete_media_item') {
         result = await wordpressService.deleteMediaItem(getNumber(args.id), getBoolean(args.force));
       }
-      
+      else if (name === 'wp_upload_media') {
+        const uploadData = {
+            filename: getString(args.filename),
+            content: getString(args.content),
+            content_type: getString(args.content_type),
+            title: getString(args.title) || undefined,
+            alt_text: getString(args.alt_text) || undefined,
+            caption: getString(args.caption) || undefined,
+            description: getString(args.description) || undefined,
+        };
+        result = await wordpressService.uploadMediaBinary(uploadData);
+        }
       // WordPress Menus
       else if (name === 'wp_get_menus') {
         result = await wordpressService.getMenus();
