@@ -1,5 +1,4 @@
 import axios, { AxiosInstance } from 'axios';
-import FormData from 'form-data';
 import { WordPressConfig } from '../types.js';
 
 export class WordPressService {
@@ -210,7 +209,7 @@ export class WordPressService {
     return response.data;
   }
 
-  // Media Upload
+  // Media Upload - Binary upload with base64 content
   async uploadMedia(fileData: {
     filename: string;
     content: string; // base64 encoded
@@ -224,57 +223,7 @@ export class WordPressService {
       // Convert base64 to buffer
       const buffer = Buffer.from(fileData.content, 'base64');
       
-      // Create form data
-      const formData = new FormData();
-      formData.append('file', buffer, {
-        filename: fileData.filename,
-        contentType: fileData.content_type,
-      });
-
-      // Add optional metadata
-      if (fileData.title) {
-        formData.append('title', fileData.title);
-      }
-      if (fileData.alt_text) {
-        formData.append('alt_text', fileData.alt_text);
-      }
-      if (fileData.caption) {
-        formData.append('caption', fileData.caption);
-      }
-      if (fileData.description) {
-        formData.append('description', fileData.description);
-      }
-
-      const response = await this.client.post('/media', formData, {
-        headers: {
-          ...formData.getHeaders(),
-        },
-      });
-
-      return response.data;
-    } catch (error) {
-      if (axios.isAxiosError(error)) {
-        throw new Error(`Failed to upload media: ${error.response?.data?.message || error.message}`);
-      }
-      throw error;
-    }
-  }
-
-  // Alternative binary upload method
-  async uploadMediaBinary(fileData: {
-    filename: string;
-    content: string; // base64 encoded
-    content_type: string;
-    title?: string;
-    alt_text?: string;
-    caption?: string;
-    description?: string;
-  }): Promise<any> {
-    try {
-      // Convert base64 to buffer
-      const buffer = Buffer.from(fileData.content, 'base64');
-      
-      // Upload the file
+      // Upload the file using binary data
       const response = await this.client.post('/media', buffer, {
         headers: {
           'Content-Type': fileData.content_type,
@@ -312,6 +261,81 @@ export class WordPressService {
       }
       throw error;
     }
+  }
+
+  // Media Upload from URL - Downloads from URL and uploads to WordPress
+  async uploadMediaFromUrl(urlData: {
+    url: string;
+    filename?: string;
+    title?: string;
+    alt_text?: string;
+    caption?: string;
+    description?: string;
+  }): Promise<any> {
+    try {
+      // Download the image from URL
+      const imageResponse = await axios.get(urlData.url, {
+        responseType: 'arraybuffer',
+        timeout: 30000, // 30 second timeout
+        headers: {
+          'User-Agent': 'WordPress-MCP/1.0',
+        },
+      });
+
+      // Get content type from response headers
+      const contentType = imageResponse.headers['content-type'] || 'image/png';
+      
+      // Extract filename from URL if not provided
+      let filename = urlData.filename;
+      if (!filename) {
+        const urlPath = new URL(urlData.url).pathname;
+        filename = urlPath.split('/').pop() || 'image.png';
+        
+        // Remove query parameters if present
+        filename = filename.split('?')[0];
+        
+        // Ensure it has an extension
+        if (!filename.includes('.')) {
+          const ext = contentType.split('/')[1] || 'png';
+          filename = `${filename}.${ext}`;
+        }
+      }
+
+      // Convert to base64
+      const base64Content = Buffer.from(imageResponse.data).toString('base64');
+
+      // Upload using existing method
+      return await this.uploadMedia({
+        filename,
+        content: base64Content,
+        content_type: contentType,
+        title: urlData.title,
+        alt_text: urlData.alt_text,
+        caption: urlData.caption,
+        description: urlData.description,
+      });
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (error.code === 'ECONNABORTED') {
+          throw new Error('Failed to download media: Request timeout');
+        }
+        throw new Error(`Failed to download and upload media: ${error.response?.data?.message || error.message}`);
+      }
+      throw error;
+    }
+  }
+
+  // Alias for consistency
+  async uploadMediaBinary(fileData: {
+    filename: string;
+    content: string;
+    content_type: string;
+    title?: string;
+    alt_text?: string;
+    caption?: string;
+    description?: string;
+  }): Promise<any> {
+    return this.uploadMedia(fileData);
   }
 
   // Menus (requires additional plugin support)
@@ -352,6 +376,206 @@ export class WordPressService {
     if (subtype) params.subtype = subtype;
     
     const response = await this.client.get('/search', { params });
+    return response.data;
+  }
+
+  // Themes
+  async getThemes() {
+    try {
+      const response = await this.client.get('/themes');
+      return response.data;
+    } catch (error) {
+      throw new Error('Themes endpoint not available or insufficient permissions.');
+    }
+  }
+
+  async getActiveTheme() {
+    try {
+      const response = await this.client.get('/themes?status=active');
+      return response.data;
+    } catch (error) {
+      throw new Error('Active theme endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Plugins
+  async getPlugins() {
+    try {
+      const response = await this.client.get('/plugins');
+      return response.data;
+    } catch (error) {
+      throw new Error('Plugins endpoint not available or insufficient permissions.');
+    }
+  }
+
+  async getActivePlugins() {
+    try {
+      const response = await this.client.get('/plugins?status=active');
+      return response.data;
+    } catch (error) {
+      throw new Error('Active plugins endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Custom Post Types
+  async getPostTypes() {
+    const response = await this.client.get('/types');
+    return response.data;
+  }
+
+  async getPostType(type: string) {
+    const response = await this.client.get(`/types/${type}`);
+    return response.data;
+  }
+
+  // Taxonomies
+  async getTaxonomies() {
+    const response = await this.client.get('/taxonomies');
+    return response.data;
+  }
+
+  async getTaxonomy(taxonomy: string) {
+    const response = await this.client.get(`/taxonomies/${taxonomy}`);
+    return response.data;
+  }
+
+  // Site Health and Status
+  async getSiteHealth() {
+    try {
+      const response = await this.client.get('/site-health');
+      return response.data;
+    } catch (error) {
+      throw new Error('Site health endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Batch Operations
+  async batchRequest(requests: any[]) {
+    try {
+      const response = await this.client.post('/batch', { requests });
+      return response.data;
+    } catch (error) {
+      throw new Error('Batch operations not supported or insufficient permissions.');
+    }
+  }
+
+  // Application Passwords (for current user)
+  async getApplicationPasswords() {
+    try {
+      const response = await this.client.get('/users/me/application-passwords');
+      return response.data;
+    } catch (error) {
+      throw new Error('Application passwords endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Widgets
+  async getWidgets() {
+    try {
+      const response = await this.client.get('/widgets');
+      return response.data;
+    } catch (error) {
+      throw new Error('Widgets endpoint not available or insufficient permissions.');
+    }
+  }
+
+  async getWidget(id: string) {
+    try {
+      const response = await this.client.get(`/widgets/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error('Widget endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Sidebars
+  async getSidebars() {
+    try {
+      const response = await this.client.get('/sidebars');
+      return response.data;
+    } catch (error) {
+      throw new Error('Sidebars endpoint not available or insufficient permissions.');
+    }
+  }
+
+  async getSidebar(id: string) {
+    try {
+      const response = await this.client.get(`/sidebars/${id}`);
+      return response.data;
+    } catch (error) {
+      throw new Error('Sidebar endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Block Types
+  async getBlockTypes() {
+    try {
+      const response = await this.client.get('/block-types');
+      return response.data;
+    } catch (error) {
+      throw new Error('Block types endpoint not available or insufficient permissions.');
+    }
+  }
+
+  async getBlockType(name: string) {
+    try {
+      const response = await this.client.get(`/block-types/${name}`);
+      return response.data;
+    } catch (error) {
+      throw new Error('Block type endpoint not available or insufficient permissions.');
+    }
+  }
+
+  // Revisions
+  async getPostRevisions(postId: number) {
+    const response = await this.client.get(`/posts/${postId}/revisions`);
+    return response.data;
+  }
+
+  async getPostRevision(postId: number, revisionId: number) {
+    const response = await this.client.get(`/posts/${postId}/revisions/${revisionId}`);
+    return response.data;
+  }
+
+  async getPageRevisions(pageId: number) {
+    const response = await this.client.get(`/pages/${pageId}/revisions`);
+    return response.data;
+  }
+
+  async getPageRevision(pageId: number, revisionId: number) {
+    const response = await this.client.get(`/pages/${pageId}/revisions/${revisionId}`);
+    return response.data;
+  }
+
+  // Autosaves
+  async getPostAutosaves(postId: number) {
+    const response = await this.client.get(`/posts/${postId}/autosaves`);
+    return response.data;
+  }
+
+  async getPostAutosave(postId: number, autosaveId: number) {
+    const response = await this.client.get(`/posts/${postId}/autosaves/${autosaveId}`);
+    return response.data;
+  }
+
+  // Custom Fields (meta)
+  async getPostMeta(postId: number) {
+    const response = await this.client.get(`/posts/${postId}/meta`);
+    return response.data;
+  }
+
+  async createPostMeta(postId: number, data: any) {
+    const response = await this.client.post(`/posts/${postId}/meta`, data);
+    return response.data;
+  }
+
+  async updatePostMeta(postId: number, metaId: number, data: any) {
+    const response = await this.client.post(`/posts/${postId}/meta/${metaId}`, data);
+    return response.data;
+  }
+
+  async deletePostMeta(postId: number, metaId: number) {
+    const response = await this.client.delete(`/posts/${postId}/meta/${metaId}`);
     return response.data;
   }
 }

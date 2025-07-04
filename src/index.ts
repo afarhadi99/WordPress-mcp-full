@@ -598,6 +598,23 @@ const tools: Tool[] = [
   },
 },
 
+{
+  name: 'wp_upload_media_from_url',
+  description: 'Download an image from URL and upload it to WordPress media library',
+  inputSchema: {
+    type: 'object',
+    properties: {
+      url: { type: 'string', description: 'URL of the image to download and upload' },
+      filename: { type: 'string', description: 'Name of the file including extension (optional, will extract from URL if not provided)' },
+      title: { type: 'string', description: 'Media title' },
+      alt_text: { type: 'string', description: 'Alt text for the image' },
+      caption: { type: 'string', description: 'Media caption' },
+      description: { type: 'string', description: 'Media description' },
+    },
+    required: ['url'],
+  },
+},
+
   // WordPress Menus
   {
     name: 'wp_get_menus',
@@ -2178,6 +2195,18 @@ async function main() {
         };
         result = await wordpressService.uploadMediaBinary(uploadData);
         }
+
+        else if (name === 'wp_upload_media_from_url') {
+  const urlData = {
+    url: getString(args.url),
+    filename: getString(args.filename) || undefined,
+    title: getString(args.title) || undefined,
+    alt_text: getString(args.alt_text) || undefined,
+    caption: getString(args.caption) || undefined,
+    description: getString(args.description) || undefined,
+  };
+  result = await wordpressService.uploadMediaFromUrl(urlData);
+}
       // WordPress Menus
       else if (name === 'wp_get_menus') {
         result = await wordpressService.getMenus();
